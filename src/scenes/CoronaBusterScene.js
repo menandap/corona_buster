@@ -13,6 +13,8 @@ export default class CoronaBusterScene extends Phaser.Scene
         this.nav_left = false
         this.nav_right = false
         this.shoot = false
+        this.player = undefined;
+        this.speed = 100;
     }
     
 	preload()
@@ -22,6 +24,11 @@ export default class CoronaBusterScene extends Phaser.Scene
         this.load.image('left-btn', 'images/left-btn.png')
         this.load.image('right-btn', 'images/right-btn.png')
         this.load.image('shoot-btn', 'images/shoot-btn.png')
+
+        this.load.spritesheet("player", "images/ship.png", {
+            frameWidth: 66,
+            frameHeight: 66,
+        });
     }
 
     create()
@@ -40,6 +47,8 @@ export default class CoronaBusterScene extends Phaser.Scene
 
         // this.cursors = this.input.keyboard.createCursorKeys()
         this.createButton() 
+
+        this.player = this.createPlayer();
     }
 
     update(time)
@@ -52,7 +61,9 @@ export default class CoronaBusterScene extends Phaser.Scene
                 child.x = Phaser.Math.Between(10, 400)
                 child.y = child.displayHeight * -1
             }
-        })       
+        }) 
+        
+        this.movePlayer(this.player, time);
    }
 
    createButton()
@@ -70,5 +81,50 @@ export default class CoronaBusterScene extends Phaser.Scene
         nav_right.on('pointerout', () => { this.nav_right = false}, this)
         shoot.on('pointerdown', () => { this.shoot = true }, this)
         shoot.on('pointerout', () => { this.shoot = false}, this)
+    }
+
+    movePlayer(player, time) {
+        if (this.nav_left) {
+          player.setVelocityX(this.speed * -1);
+          player.anims.play("left", true);
+          player.setFlipX(false);
+        } else if (this.nav_right) {
+          player.setVelocityX(this.speed);
+          player.anims.play("right", true);
+          player.setFlipX(true);
+        } else {
+          player.setVelocityX(0);
+          player.anims.play("turn");
+        }
+      }
+
+    createPlayer(){
+        const player = this.physics.add.sprite(200, 450,'player')
+        player.setCollideWorldBounds(true)
+
+        this.anims.create({
+            key: "turn",
+            frames: [
+              {
+                key: "player",
+                frame: 0,
+              },
+            ],
+          });
+          this.anims.create({
+            key: "left",
+            frames: this.anims.generateFrameNumbers("player", {
+              start: 1,
+              end: 2,
+            }),
+          });
+          this.anims.create({
+            key: "right",
+            frames: this.anims.generateFrameNumbers("player", {
+              start: 1,
+              end: 2,
+            }),
+          });
+        return player
     }
 }
